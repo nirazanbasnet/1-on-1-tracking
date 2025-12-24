@@ -52,9 +52,9 @@ next-env.d.ts
 # Supabase
 **/supabase/.branches
 **/supabase/.temp
-**/supabase/.env    
-**/supabase/migrations/*.sql
+**/supabase/.env
 **/supabase/storage/emulator/*
+# Note: migrations/*.sql should be committed for production deployment
 
 # Storybook
 .storybook
