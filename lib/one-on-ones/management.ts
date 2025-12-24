@@ -45,8 +45,18 @@ export async function getOrCreateOneOnOne(
     .limit(1)
     .single();
 
-  if (!userTeam || !userTeam.team?.manager_id) {
-    // Developer doesn't have a team or manager assigned yet
+  if (!userTeam) {
+    // Developer doesn't have a team assigned yet
+    return null;
+  }
+
+  // Transform team from array to single object (Supabase returns foreign keys as arrays)
+  const team = Array.isArray(userTeam.team) && userTeam.team.length > 0
+    ? userTeam.team[0]
+    : userTeam.team as any;
+
+  if (!team?.manager_id) {
+    // Team doesn't have a manager assigned yet
     return null;
   }
 
@@ -55,7 +65,7 @@ export async function getOrCreateOneOnOne(
     .from('one_on_ones')
     .insert({
       developer_id: developerId,
-      manager_id: userTeam.team.manager_id,
+      manager_id: team.manager_id,
       team_id: userTeam.team_id,
       month: targetMonth,
       status: 'draft',

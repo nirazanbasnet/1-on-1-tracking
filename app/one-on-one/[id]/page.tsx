@@ -5,25 +5,27 @@ import { getActiveQuestions, getAnswers, getNotes } from '@/app/actions/answers'
 import { getActionItems } from '@/app/actions/action-items';
 import { OneOnOneForm } from '@/components/one-on-one/one-on-one-form';
 
-export default async function OneOnOnePage({ params }: { params: { id: string } }) {
+export default async function OneOnOnePage({ params }: { params: Promise<{ id: string }> }) {
   const profile = await getCurrentUserProfile();
 
   if (!profile) {
     redirect('/');
   }
 
+  const { id } = await params;
+
   let oneOnOne;
   try {
-    oneOnOne = await getOneOnOneById(params.id);
+    oneOnOne = await getOneOnOneById(id);
   } catch (error) {
     redirect('/dashboard');
   }
 
   const [questions, answers, notes, actionItems] = await Promise.all([
     getActiveQuestions(),
-    getAnswers(params.id),
-    getNotes(params.id),
-    getActionItems(params.id),
+    getAnswers(id),
+    getNotes(id),
+    getActionItems(id),
   ]);
 
   const isDeveloper = profile.id === oneOnOne.developer_id;

@@ -20,7 +20,7 @@ export async function signInWithGoogle() {
 
   if (error) {
     console.error('Error signing in:', error);
-    return { error: error.message };
+    throw new Error(error.message);
   }
 
   if (data.url) {

@@ -9,7 +9,7 @@ import { requireAdmin } from '@/lib/auth/user-context';
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Verify admin access
@@ -17,7 +17,7 @@ export async function PATCH(
 
     const body = await request.json();
     const { role, team_ids } = body;
-    const { userId } = params;
+    const { userId } = await params;
 
     if (!userId) {
       return NextResponse.json(
@@ -142,12 +142,12 @@ export async function PATCH(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await requireAdmin();
 
-    const { userId } = params;
+    const { userId } = await params;
     const supabase = createAdminClient();
 
     const { data: userData, error } = await supabase

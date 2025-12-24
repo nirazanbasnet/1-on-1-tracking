@@ -120,7 +120,11 @@ export async function getTeamMembers(): Promise<AppUser[]> {
     .eq('team_id', team.id)
     .order('app_users(full_name)');
 
-  return userTeams?.map(ut => ut.app_users).filter(Boolean) || [];
+  // Transform app_users from array to single object (Supabase returns foreign keys as arrays)
+  return userTeams?.map(ut => {
+    const user = Array.isArray(ut.app_users) ? ut.app_users[0] : ut.app_users;
+    return user;
+  }).filter(Boolean) as AppUser[] || [];
 }
 
 /**

@@ -146,5 +146,5 @@ export interface MetricTrendData {
   month: string;
   developer: number;
   manager: number;
-  teamAverage: number;
+  teamAverage: number | null;
 }

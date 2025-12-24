@@ -145,7 +145,7 @@ export function UserManagementRow({ user, teams, currentUserId }: UserManagement
         <td className="px-6 py-4 whitespace-nowrap">
           <select
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
+            onChange={(e) => setSelectedRole(e.target.value as 'developer' | 'manager' | 'admin')}
             disabled={isCurrentUser || isUpdating}
             className="px-2 py-1 text-xs font-medium rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >

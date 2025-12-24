@@ -59,13 +59,13 @@ export function DeveloperDeepDive({ data }: DeveloperDeepDiveProps) {
         {
             label: 'Avg Rating',
             value: data.overall_stats.avg_developer_rating?.toFixed(1) || 'N/A',
-            trend: data.overall_stats.avg_developer_rating ? data.trends.developer_rating_trend : null,
+            trend: data.overall_stats.avg_developer_rating ? data.trends.developer_rating_trend : undefined,
             trendLabel: data.overall_stats.avg_developer_rating ? 'vs 6m avg' : ''
         },
         {
             label: 'Manager Rating',
             value: data.overall_stats.avg_manager_rating?.toFixed(1) || 'N/A',
-            trend: data.overall_stats.avg_manager_rating ? data.trends.manager_rating_trend : null,
+            trend: data.overall_stats.avg_manager_rating ? data.trends.manager_rating_trend : undefined,
             trendLabel: data.overall_stats.avg_manager_rating ? 'vs 6m avg' : ''
         },
         {
@@ -73,7 +73,6 @@ export function DeveloperDeepDive({ data }: DeveloperDeepDiveProps) {
             value: data.overall_stats.total_action_items > 0
                 ? `${data.overall_stats.completed_action_items}/${data.overall_stats.total_action_items}`
                 : 'N/A',
-            trend: null,
             trendLabel: data.overall_stats.completion_rate
                 ? `${(data.overall_stats.completion_rate * 100).toFixed(0)}% Completion`
                 : ''
@@ -81,7 +80,6 @@ export function DeveloperDeepDive({ data }: DeveloperDeepDiveProps) {
         {
             label: '1-on-1s',
             value: data.overall_stats.total_one_on_ones || 0,
-            trend: null,
             trendLabel: 'Completed'
         }
     ];

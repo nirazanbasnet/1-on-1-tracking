@@ -80,8 +80,9 @@ export async function getAnalyticsDataForDeveloper(
   const alignments = monthlyMetrics.map(m => m.rating_alignment);
 
   // Calculate average alignment
-  const avgAlignment = hasData && alignments.filter(a => a !== null).length > 0
-    ? alignments.reduce((sum, a) => sum + (a || 0), 0) / alignments.filter(a => a !== null).length
+  const validAlignments = alignments.filter((a): a is number => a !== null);
+  const avgAlignment = hasData && validAlignments.length > 0
+    ? validAlignments.reduce((sum, a) => sum + a, 0) / validAlignments.length
     : null;
 
   return {

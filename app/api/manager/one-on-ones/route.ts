@@ -70,8 +70,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Type assertion: Supabase returns teams as an object (not array) when using inner join with maybeSingle
+    const team = userTeam.teams as unknown as { id: string; name: string; manager_id: string };
+
     // Verify the current user is the developer's manager (unless admin)
-    const isTheirManager = userTeam.teams.manager_id === user.id;
+    const isTheirManager = team.manager_id === user.id;
     const isAdmin = user.role === 'admin';
 
     if (!isTheirManager && !isAdmin) {
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const managerId = userTeam.teams.manager_id;
+    const managerId = team.manager_id;
     if (!managerId) {
       return NextResponse.json(
         { error: 'Team does not have a manager assigned' },

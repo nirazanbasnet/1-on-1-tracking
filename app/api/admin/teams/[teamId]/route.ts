@@ -9,7 +9,7 @@ import { requireAdmin } from '@/lib/auth/user-context';
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     // Verify admin access
@@ -17,7 +17,7 @@ export async function PATCH(
 
     const body = await request.json();
     const { name, manager_id } = body;
-    const { teamId } = params;
+    const { teamId } = await params;
 
     if (!teamId) {
       return NextResponse.json(
@@ -98,12 +98,12 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     await requireAdmin();
 
-    const { teamId } = params;
+    const { teamId } = await params;
     const supabase = createAdminClient();
 
     // Check if team has any members

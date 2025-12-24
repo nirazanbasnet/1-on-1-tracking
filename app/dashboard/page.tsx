@@ -45,7 +45,7 @@ async function getAllUsers() {
   // Fetch all users
   const { data: users } = await supabase
     .from('app_users')
-    .select('id, email, full_name, role, created_at')
+    .select('id, email, full_name, role, team_id, created_at, updated_at')
     .order('created_at', { ascending: false });
 
   if (!users) return [];
@@ -70,17 +70,24 @@ async function getAllTeams() {
       id,
       name,
       manager_id,
+      created_at,
+      updated_at,
       manager:app_users!manager_id(email, full_name)
     `)
     .order('name');
-  return data || [];
+
+  // Transform manager from array to single object (Supabase returns foreign keys as arrays)
+  return (data || []).map(team => ({
+    ...team,
+    manager: Array.isArray(team.manager) && team.manager.length > 0 ? team.manager[0] : null
+  }));
 }
 
 async function getManagers() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('app_users')
-    .select('id, email, full_name, role')
+    .select('id, email, full_name, role, team_id, created_at, updated_at')
     .in('role', ['admin', 'manager'])
     .order('full_name');
   return data || [];
@@ -182,7 +189,11 @@ async function getDeveloperOneOnOnes(developerId: string) {
     .eq('developer_id', developerId)
     .order('month_year', { ascending: false });
 
-  return data || [];
+  // Transform manager from array to single object (Supabase returns foreign keys as arrays)
+  return (data || []).map(oneOnOne => ({
+    ...oneOnOne,
+    manager: Array.isArray(oneOnOne.manager) && oneOnOne.manager.length > 0 ? oneOnOne.manager[0] : { id: '', email: '', full_name: null }
+  }));
 }
 
 export default async function DashboardPage() {

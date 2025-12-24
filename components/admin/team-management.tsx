@@ -8,10 +8,14 @@ interface TeamWithManager extends Team {
   manager?: Pick<AppUser, 'email' | 'full_name'> | null;
 }
 
+interface AppUserWithTeams extends AppUser {
+  team_ids?: string[];
+}
+
 interface TeamManagementProps {
   teams: TeamWithManager[];
   managers: AppUser[];
-  allUsers?: AppUser[];
+  allUsers?: AppUserWithTeams[];
 }
 
 export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }: TeamManagementProps) {
