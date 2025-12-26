@@ -57,10 +57,10 @@ export function ManagerDeepDive({ data }: ManagerDeepDiveProps) {
     ];
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <StatsCards stats={stats} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TeamPerformanceArea metrics={data.monthly_metrics} />
                 <ComparativeChart members={data.team_members} />
             </div>

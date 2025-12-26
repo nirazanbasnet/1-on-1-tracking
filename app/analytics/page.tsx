@@ -86,24 +86,24 @@ export default async function AnalyticsPage(props: {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
-            <nav className="bg-white shadow-sm">
+        <div className="min-h-screen bg-gray-50/50 pb-8">
+            <nav className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
-                        <div className="flex items-center gap-8">
-                            <h1 className="text-xl font-semibold text-gray-900">
-                                1-on-1 Tracking Platform
+                    <div className="flex justify-between h-14 items-center">
+                        <div className="flex items-center gap-6">
+                            <h1 className="text-lg font-semibold text-gray-900">
+                                1-on-1 Tracking
                             </h1>
-                            <div className="hidden md:flex items-center gap-4">
+                            <div className="hidden md:flex items-center gap-2">
                                 <a
                                     href="/dashboard"
-                                    className="text-sm font-medium text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                                    className="text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
                                 >
                                     Dashboard
                                 </a>
                                 <a
                                     href="/analytics"
-                                    className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-2 rounded-md"
+                                    className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md"
                                 >
                                     Analytics
                                 </a>
@@ -114,16 +114,16 @@ export default async function AnalyticsPage(props: {
                                 initialNotifications={notifications}
                                 initialUnreadCount={unreadCount}
                             />
-                            <div className="text-sm">
-                                <span className="font-medium text-gray-900">{profile.full_name || profile.email}</span>
-                                <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(profile.role)}`}>
-                                    {profile.role.toUpperCase()}
+                            <div className="text-sm flex items-center gap-2">
+                                <span className="font-medium text-gray-700">{profile.full_name || profile.email}</span>
+                                <span className={`px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase rounded-full ${getRoleBadgeColor(profile.role)}`}>
+                                    {profile.role}
                                 </span>
                             </div>
                             <form action={signOut}>
                                 <button
                                     type="submit"
-                                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                                    className="text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
                                 >
                                     Sign Out
                                 </button>
@@ -133,21 +133,26 @@ export default async function AnalyticsPage(props: {
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h2>
-                    <p className="text-gray-600 mt-2">
-                        {profile.role === 'admin' && 'View organization-wide performance metrics and insights.'}
-                        {profile.role === 'manager' && 'Track your team\'s performance and growth trends.'}
-                        {profile.role === 'developer' && 'Analyze your professional growth and development progress.'}
-                    </p>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Analytics</h2>
+                        <p className="text-sm text-gray-500 mt-1">
+                            {profile.role === 'admin' && 'Organization-wide performance metrics.'}
+                            {profile.role === 'manager' && 'Team performance and growth trends.'}
+                            {profile.role === 'developer' && 'Professional growth and development.'}
+                        </p>
+                    </div>
+                    {/* Filters can go here or remain below */}
                 </div>
 
-                <AnalyticsFilters role={profile.role} />
+                <div className="space-y-6">
+                    <AnalyticsFilters role={profile.role} />
 
-                <Suspense fallback={<div className="text-center py-10">Loading analytics...</div>}>
-                    <ViewComponent data={analyticsData} />
-                </Suspense>
+                    <Suspense fallback={<div className="text-center py-10 text-sm text-gray-500">Loading data...</div>}>
+                        <ViewComponent data={analyticsData} />
+                    </Suspense>
+                </div>
             </main>
         </div>
     );

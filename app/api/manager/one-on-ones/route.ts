@@ -92,23 +92,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if 1-on-1 already exists
-    const { data: existing } = await supabase
+    // Find the highest session number for this month to create next session
+    const { data: existingSessions } = await supabase
       .from('one_on_ones')
-      .select('id')
+      .select('session_number')
       .eq('developer_id', developer_id)
       .eq('manager_id', managerId)
       .eq('month_year', month_year)
-      .maybeSingle();
+      .order('session_number', { ascending: false })
+      .limit(1);
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'A 1-on-1 already exists for this developer and month' },
-        { status: 409 }
-      );
-    }
+    // Calculate next session number
+    const nextSessionNumber = existingSessions && existingSessions.length > 0
+      ? (existingSessions[0].session_number || 0) + 1
+      : 1;
 
-    // Create new 1-on-1
+    // Create new 1-on-1 with session number
     const { data: newOneOnOne, error: insertError } = await supabase
       .from('one_on_ones')
       .insert({
@@ -116,6 +115,8 @@ export async function POST(request: NextRequest) {
         manager_id: managerId,
         team_id: userTeam.team_id,
         month_year,
+        session_number: nextSessionNumber,
+        title: `Session ${nextSessionNumber}`,
         status: 'draft',
       })
       .select()

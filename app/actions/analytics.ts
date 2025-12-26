@@ -29,6 +29,35 @@ export async function getAnalyticsDataForDeveloper(
     .eq('id', developerId)
     .single();
 
+  // Fetch latest session category scores
+  const { data: latestSession } = await supabase
+    .from('one_on_ones')
+    .select('id, month_year')
+    .eq('developer_id', developerId)
+    .eq('status', 'completed')
+    .order('month_year', { ascending: false })
+    .order('session_number', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let categoryScores: any = null;
+  if (latestSession) {
+    const { data: answers } = await supabase
+      .from('answers')
+      .select(`
+        id,
+        rating_value,
+        question:questions(id, question_text, category)
+      `)
+      .eq('one_on_one_id', latestSession.id)
+      .eq('answer_type', 'developer');
+
+    categoryScores = {
+      month_year: latestSession.month_year,
+      answers: answers || []
+    };
+  }
+
   // Fetch real metrics from database
   const { data: metrics } = await supabase
     .from('metrics_snapshots')
@@ -90,6 +119,7 @@ export async function getAnalyticsDataForDeveloper(
     developer_name: developer?.full_name || "Developer",
     developer_email: developer?.email || "",
     monthly_metrics: monthlyMetrics,
+    category_scores: categoryScores,
     overall_stats: {
       avg_developer_rating: avgDevRating,
       avg_manager_rating: avgMgrRating,

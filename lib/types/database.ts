@@ -4,6 +4,7 @@ export type UserRole = 'admin' | 'manager' | 'developer';
 export type OneOnOneStatus = 'draft' | 'submitted' | 'reviewed' | 'completed';
 export type QuestionType = 'rating_1_5' | 'rating_1_10' | 'text' | 'yes_no';
 export type QuestionScope = 'company' | 'team';
+export type QuestionCategory = 'research' | 'strategy' | 'core_qualities' | 'leadership' | 'technical';
 export type AnswerSource = 'developer' | 'manager';
 export type NoteType = 'developer_notes' | 'manager_feedback';
 export type ActionStatus = 'pending' | 'in_progress' | 'completed';
@@ -40,6 +41,8 @@ export interface OneOnOne {
   manager_id: string;
   team_id: string;
   month_year: string; // Format: YYYY-MM
+  session_number: number;
+  title: string | null;
   status: OneOnOneStatus;
   created_at: string;
   updated_at: string;
@@ -53,6 +56,7 @@ export interface Question {
   question_text: string;
   question_type: QuestionType;
   scope: QuestionScope;
+  category: QuestionCategory | null;
   team_id: string | null;
   is_active: boolean;
   sort_order: number;

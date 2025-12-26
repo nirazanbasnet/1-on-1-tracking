@@ -24,30 +24,32 @@ export function TeamComparisonChart({ teams }: TeamComparisonChartProps) {
     }));
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Comparisons</h3>
-            <div className="h-96 w-full">
+        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Team Comparisons</h3>
+            <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
                         layout="vertical"
                         margin={{
-                            top: 20,
-                            right: 30,
-                            left: 40,
-                            bottom: 5,
+                            top: 5,
+                            right: 10,
+                            left: 10,
+                            bottom: 0,
                         }}
+                        barGap={1}
+                        barCategoryGap={16}
                     >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                        <XAxis type="number" domain={[0, 5]} />
-                        <YAxis type="category" dataKey="name" width={100} />
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E5E7EB" />
+                        <XAxis type="number" domain={[0, 5]} hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6B7280' }} />
+                        <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: '#374151' }} axisLine={false} tickLine={false} />
                         <Tooltip
-                            cursor={{ fill: '#f3f4f6' }}
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            cursor={{ fill: '#F9FAFB' }}
+                            contentStyle={{ borderRadius: '6px', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }}
                         />
-                        <Legend />
-                        <Bar dataKey="rating" name="Dev Rating" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20} />
-                        <Bar dataKey="managerRating" name="Mgr Rating" fill="#10B981" radius={[0, 4, 4, 0]} barSize={20} />
+                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '5px' }} iconSize={8} />
+                        <Bar dataKey="rating" name="Dev Rating" fill="#3B82F6" radius={[0, 3, 3, 0]} barSize={12} />
+                        <Bar dataKey="managerRating" name="Mgr Rating" fill="#10B981" radius={[0, 3, 3, 0]} barSize={12} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

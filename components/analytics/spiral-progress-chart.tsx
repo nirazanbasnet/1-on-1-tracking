@@ -43,24 +43,20 @@ export function SpiralProgressChart({ data }: SpiralProgressChartProps) {
     }));
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 h-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Growth Spiral</h3>
-            <div className="h-80 w-full relative">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Growth Spiral</h3>
+            <div className="h-64 w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
                         cx="50%"
                         cy="50%"
                         innerRadius="20%"
                         outerRadius="100%"
-                        barSize={20}
+                        barSize={15}
                         data={processedData}
                         startAngle={90}
                         endAngle={-270}
                     >
-                        {/* 
-               PolarAngleAxis is tricky with RadialBar. 
-               We rely on the bars themselves to show the "Spiral".
-            */}
                         <PolarAngleAxis
                             type="number"
                             domain={[0, 5]}
@@ -74,10 +70,17 @@ export function SpiralProgressChart({ data }: SpiralProgressChartProps) {
                             cornerRadius={10}
                         />
                         <Legend
-                            iconSize={10}
+                            iconSize={8}
                             layout="vertical"
                             verticalAlign="middle"
-                            wrapperStyle={style}
+                            wrapperStyle={{
+                                top: '50%',
+                                right: 0,
+                                transform: 'translate(0, -50%)',
+                                lineHeight: '20px',
+                                fontSize: '12px',
+                                color: '#6B7280'
+                            }}
                         />
                         <Tooltip
                             cursor={{ stroke: 'red', strokeWidth: 2 }}
@@ -86,8 +89,8 @@ export function SpiralProgressChart({ data }: SpiralProgressChartProps) {
                                     const d = payload[0].payload;
                                     return (
                                         <div className="bg-white p-2 border border-gray-200 shadow-lg rounded">
-                                            <p className="font-semibold">{d.month}</p>
-                                            <p className="text-sm">Rating: <span style={{ color: d.fill }}>{d.score.toFixed(1)}</span></p>
+                                            <p className="font-semibold text-xs">{d.month}</p>
+                                            <p className="text-xs">Rating: <span style={{ color: d.fill }}>{d.score.toFixed(1)}</span></p>
                                         </div>
                                     );
                                 }
@@ -97,8 +100,8 @@ export function SpiralProgressChart({ data }: SpiralProgressChartProps) {
                     </RadialBarChart>
                 </ResponsiveContainer>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                    <p className="text-xs text-gray-500">Avg</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Avg</p>
+                    <p className="text-xl font-bold text-gray-900">
                         {(data.reduce((acc, curr) => acc + curr.score, 0) / (data.length || 1)).toFixed(1)}
                     </p>
                 </div>

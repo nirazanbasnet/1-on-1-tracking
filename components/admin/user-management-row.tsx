@@ -200,7 +200,7 @@ export function UserManagementRow({ user, teams, currentUserId }: UserManagement
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.full_name || '-'}</td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(currentRole)}`}>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getRoleBadgeColor(currentRole)}`}>
           {currentRole}
         </span>
       </td>

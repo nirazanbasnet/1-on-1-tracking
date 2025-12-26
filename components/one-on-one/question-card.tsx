@@ -79,37 +79,13 @@ export function QuestionCard({
 
     if (!otherAnswer) return null;
 
+    // Only show text responses, not ratings
+    if (!otherAnswer.text_value) return null;
+
     return (
       <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-xs font-medium text-gray-500 mb-2">{otherRole} Response:</p>
-        {isRatingQuestion && otherAnswer.rating_value && (
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <div
-                  key={value}
-                  className={`w-8 h-8 rounded border-2 flex items-center justify-center text-sm font-medium ${
-                    otherAnswer.rating_value === value
-                      ? 'border-blue-500 bg-blue-500 text-white'
-                      : 'border-gray-300 text-gray-400'
-                  }`}
-                >
-                  {value}
-                </div>
-              ))}
-            </div>
-            <span className="text-sm text-gray-600">
-              {otherAnswer.rating_value === 1 && '(Very Low)'}
-              {otherAnswer.rating_value === 2 && '(Low)'}
-              {otherAnswer.rating_value === 3 && '(Average)'}
-              {otherAnswer.rating_value === 4 && '(High)'}
-              {otherAnswer.rating_value === 5 && '(Very High)'}
-            </span>
-          </div>
-        )}
-        {otherAnswer.text_value && (
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{otherAnswer.text_value}</p>
-        )}
+        <p className="text-xs font-medium text-gray-500 mb-2">{otherRole} Notes:</p>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap">{otherAnswer.text_value}</p>
       </div>
     );
   };

@@ -102,10 +102,10 @@ export async function DELETE(
     const { teamId } = await params;
     const supabase = createAdminClient();
 
-    // Check if team has any members
-    const { data: users, error: checkError } = await supabase
-      .from('app_users')
-      .select('id')
+    // Check if team has any members (using user_teams junction table)
+    const { data: userTeams, error: checkError } = await supabase
+      .from('user_teams')
+      .select('user_id')
       .eq('team_id', teamId);
 
     if (checkError) {
@@ -115,7 +115,7 @@ export async function DELETE(
       );
     }
 
-    if (users && users.length > 0) {
+    if (userTeams && userTeams.length > 0) {
       return NextResponse.json(
         { error: 'Cannot delete team with assigned members. Please reassign them first.' },
         { status: 400 }

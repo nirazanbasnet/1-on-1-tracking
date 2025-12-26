@@ -49,7 +49,7 @@ export default async function OneOnOnePage({ params }: { params: Promise<{ id: s
                   month: 'long',
                   year: 'numeric',
                 })}{' '}
-                1-on-1
+                - {oneOnOne.title || `Session ${oneOnOne.session_number}`}
               </h1>
             </div>
             <div className="flex items-center gap-2">

@@ -55,18 +55,18 @@ export function OrganizationOverview({ data }: OrganizationOverviewProps) {
     ];
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <StatsCards stats={stats} />
 
             <TeamComparisonChart teams={data.teams} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 px-1">Top Performers</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 px-1">Top Performers</h3>
                     <TeamPerformanceGrid members={data.top_performers} />
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 px-1">Needs Attention</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 px-1">Needs Attention</h3>
                     <TeamPerformanceGrid members={data.needs_attention} />
                 </div>
             </div>

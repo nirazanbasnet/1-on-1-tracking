@@ -2,10 +2,11 @@ import { redirect } from 'next/navigation';
 import { signOut } from '@/app/actions/auth';
 import { getCurrentUserProfile } from '@/lib/auth/user-context';
 import { createClient } from '@/lib/supabase/server';
-import { UserManagementRow } from '@/components/admin/user-management-row';
+import { UserCard } from '@/components/admin/user-card';
 import { TeamManagement } from '@/components/admin/team-management';
 import { TeamOneOnOnes } from '@/components/manager/team-one-on-ones';
 import { MyOneOnOnes } from '@/components/developer/my-one-on-ones';
+import { ManagerInfo } from '@/components/developer/manager-info';
 import { PendingActionItems } from '@/components/dashboard/pending-action-items';
 import { DeveloperProgress } from '@/components/dashboard/developer-progress';
 import { TeamAnalytics } from '@/components/dashboard/team-analytics';
@@ -13,6 +14,8 @@ import { getMyPendingActionItems } from '@/app/actions/action-items';
 import { getDeveloperMetricsHistory, getTeamMetrics, getTeamStatistics } from '@/app/actions/metrics';
 import { getMyNotifications, getUnreadNotificationCount } from '@/app/actions/notifications';
 import { NotificationCenter } from '@/components/notifications/notification-center';
+import { SkillRadarChart } from '@/components/analytics/skill-radar-chart';
+import { calculateCategoryScores, formatForRadarChart } from '@/lib/utils/category-analytics';
 
 async function getStats() {
   const supabase = await createClient();
@@ -75,15 +78,27 @@ async function getAllTeams() {
       manager_id,
       created_at,
       updated_at,
-      manager:app_users!manager_id(email, full_name)
+      manager:app_users!manager_id(id, email, full_name)
     `)
     .order('name');
 
   // Transform manager from array to single object (Supabase returns foreign keys as arrays)
-  return (data || []).map(team => ({
-    ...team,
-    manager: Array.isArray(team.manager) && team.manager.length > 0 ? team.manager[0] : null
-  }));
+  return (data || []).map(team => {
+    // Handle different manager data formats
+    let manager = null;
+    if (team.manager) {
+      if (Array.isArray(team.manager) && team.manager.length > 0) {
+        manager = team.manager[0];
+      } else if (!Array.isArray(team.manager)) {
+        manager = team.manager;
+      }
+    }
+
+    return {
+      ...team,
+      manager
+    };
+  });
 }
 
 async function getManagers() {
@@ -160,8 +175,9 @@ async function getTeamMembersWithOneOnOnes(managerId: string, currentMonth: stri
   const memberIds = members.map((m: any) => m.id);
   const { data: oneOnOnes } = await supabase
     .from('one_on_ones')
-    .select('id, developer_id, month_year, status')
-    .in('developer_id', memberIds);
+    .select('id, developer_id, month_year, status, session_number, title')
+    .in('developer_id', memberIds)
+    .order('session_number', { ascending: false });
 
   // Attach 1-on-1s to members
   const membersWithOneOnOnes = members.map((member: any) => ({
@@ -195,13 +211,87 @@ async function getDeveloperOneOnOnes(developerId: string) {
       manager:app_users!manager_id(id, email, full_name)
     `)
     .eq('developer_id', developerId)
-    .order('month_year', { ascending: false });
+    .order('month_year', { ascending: false});
 
   // Transform manager from array to single object (Supabase returns foreign keys as arrays)
   return (data || []).map(oneOnOne => ({
     ...oneOnOne,
     manager: Array.isArray(oneOnOne.manager) && oneOnOne.manager.length > 0 ? oneOnOne.manager[0] : { id: '', email: '', full_name: null }
   }));
+}
+
+async function getLatestSessionCategoryScores(developerId: string) {
+  const supabase = await createClient();
+
+  // Get the latest completed 1-on-1
+  const { data: latestSession } = await supabase
+    .from('one_on_ones')
+    .select('id, month_year')
+    .eq('developer_id', developerId)
+    .eq('status', 'completed')
+    .order('month_year', { ascending: false })
+    .order('session_number', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!latestSession) {
+    return null;
+  }
+
+  // Get answers with questions for category scoring
+  const { data: answers } = await supabase
+    .from('answers')
+    .select(`
+      id,
+      rating_value,
+      question:questions(id, question_text, category)
+    `)
+    .eq('one_on_one_id', latestSession.id)
+    .eq('answer_type', 'developer');
+
+  return {
+    month_year: latestSession.month_year,
+    answers: answers || []
+  };
+}
+
+async function getDeveloperManager(developerId: string) {
+  const supabase = await createClient();
+
+  // Get developer's first team assignment
+  const { data: userTeam } = await supabase
+    .from('user_teams')
+    .select(`
+      team_id,
+      teams!inner(
+        id,
+        name,
+        manager_id,
+        manager:app_users!manager_id(id, email, full_name)
+      )
+    `)
+    .eq('user_id', developerId)
+    .limit(1)
+    .maybeSingle();
+
+  if (!userTeam) {
+    return { manager: null, teamName: null };
+  }
+
+  // Transform team from array to single object
+  const team = Array.isArray(userTeam.teams) && userTeam.teams.length > 0
+    ? userTeam.teams[0]
+    : userTeam.teams as any;
+
+  // Transform manager from array to single object
+  const manager = team?.manager
+    ? (Array.isArray(team.manager) && team.manager.length > 0 ? team.manager[0] : team.manager)
+    : null;
+
+  return {
+    manager: manager || null,
+    teamName: team?.name || null
+  };
 }
 
 export default async function DashboardPage() {
@@ -220,6 +310,14 @@ export default async function DashboardPage() {
   const managers = profile.role === 'admin' ? await getManagers() : [];
   const users = profile.role === 'admin' ? await getAllUsers() : [];
 
+  // Debug logging for admin
+  if (profile.role === 'admin') {
+    console.log('Admin dashboard - Teams count:', teams.length);
+    console.log('Admin dashboard - Teams data:', JSON.stringify(teams, null, 2));
+    console.log('Admin dashboard - Managers count:', managers.length);
+    console.log('Admin dashboard - Users count:', users.length);
+  }
+
   // Manager data
   const managerTeamData = profile.role === 'manager'
     ? await getTeamMembersWithOneOnOnes(profile.id, currentMonth)
@@ -229,6 +327,14 @@ export default async function DashboardPage() {
   const myOneOnOnes = profile.role === 'developer'
     ? await getDeveloperOneOnOnes(profile.id)
     : [];
+
+  const developerManagerInfo = profile.role === 'developer'
+    ? await getDeveloperManager(profile.id)
+    : { manager: null, teamName: null };
+
+  const latestCategoryScores = profile.role === 'developer'
+    ? await getLatestSessionCategoryScores(profile.id)
+    : null;
 
   // Action items for managers and developers
   const pendingActionItems = (profile.role === 'manager' || profile.role === 'developer')
@@ -395,48 +501,36 @@ export default async function DashboardPage() {
             </div>
 
             {/* Users Management */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">All Users</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">All Users</h3>
+                  <p className="text-sm text-gray-600 mt-1">{users.length} user{users.length !== 1 ? 's' : ''} total</p>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teams</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center">
-                            <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <p className="text-lg font-medium mb-2">No users found</p>
-                            <p className="text-sm">Users will appear here after they sign up</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      users.map((user) => (
-                        <UserManagementRow
-                          key={user.id}
-                          user={user}
-                          teams={teams}
-                          currentUserId={profile.id}
-                        />
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+
+              {users.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-12">
+                  <div className="flex flex-col items-center text-center">
+                    <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <p className="text-lg font-medium text-gray-900 mb-2">No users found</p>
+                    <p className="text-sm text-gray-500">Users will appear here after they sign up</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {users.map((user) => (
+                    <UserCard
+                      key={user.id}
+                      user={user}
+                      teams={teams}
+                      currentUserId={profile.id}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -557,18 +651,62 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <PendingActionItems actionItems={pendingActionItems as any} userRole="developer" />
-              <DeveloperProgress
-                metrics={developerMetrics}
-                developerName={profile.full_name || profile.email}
+            {/* Manager Info Card */}
+            <div className="mb-8">
+              <ManagerInfo
+                manager={developerManagerInfo.manager}
+                teamName={developerManagerInfo.teamName}
               />
             </div>
-            <MyOneOnOnes
-              oneOnOnes={myOneOnOnes}
-              developerId={profile.id}
-              currentMonth={currentMonth}
-            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-8">
+                <PendingActionItems actionItems={pendingActionItems as any} userRole="developer" />
+                <MyOneOnOnes
+                  oneOnOnes={myOneOnOnes}
+                  developerId={profile.id}
+                  currentMonth={currentMonth}
+                />
+              </div>
+
+              <div className="space-y-8">
+                <DeveloperProgress
+                  metrics={developerMetrics}
+                  developerName={profile.full_name || profile.email}
+                />
+
+                {/* Radar Chart Widget */}
+                {latestCategoryScores && latestCategoryScores.answers.length > 0 ? (
+                  <a href="/analytics" className="block cursor-pointer group">
+                    {(() => {
+                      const categoryScores = calculateCategoryScores(latestCategoryScores.answers as any);
+                      const radarData = formatForRadarChart(categoryScores);
+                      return (
+                        <div className="relative">
+                          <SkillRadarChart
+                            data={radarData}
+                            userLabel="Latest Performance"
+                            teamLabel=""
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all rounded-lg flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-4 py-2 rounded-lg shadow-lg">
+                              <p className="text-sm font-medium text-gray-900">View Full Analytics →</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </a>
+                ) : (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Skills Overview</h3>
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 text-sm">Complete a 1-on-1 to see your skills radar chart</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>

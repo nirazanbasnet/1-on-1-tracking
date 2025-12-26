@@ -1,8 +1,5 @@
 'use client';
 
-import { getOrCreateCurrentMonthOneOnOne } from '@/app/actions/one-on-ones';
-import { useState } from 'react';
-
 interface OneOnOneWithRelations {
   id: string;
   month_year: string;
@@ -24,24 +21,7 @@ interface MyOneOnOnesProps {
 }
 
 export function MyOneOnOnes({ oneOnOnes, developerId, currentMonth }: MyOneOnOnesProps) {
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const currentMonthOneOnOne = oneOnOnes.find((o) => o.month_year === currentMonth);
-
-  const handleStartCurrentMonth = async () => {
-    setIsCreating(true);
-    setError(null);
-
-    try {
-      const oneOnOne = await getOrCreateCurrentMonthOneOnOne(developerId);
-      window.location.href = `/one-on-one/${oneOnOne.id}`;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create 1-on-1');
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -71,18 +51,12 @@ export function MyOneOnOnes({ oneOnOnes, developerId, currentMonth }: MyOneOnOne
           </div>
           {currentMonthOneOnOne ? (
             <span
-              className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusBadge(currentMonthOneOnOne.status)}`}
+              className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${getStatusBadge(currentMonthOneOnOne.status)}`}
             >
               {currentMonthOneOnOne.status}
             </span>
           ) : null}
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
 
         {currentMonthOneOnOne ? (
           <div className="space-y-3">
@@ -114,15 +88,15 @@ export function MyOneOnOnes({ oneOnOnes, developerId, currentMonth }: MyOneOnOne
             </div>
           </div>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-gray-600 mb-4">You haven't started your 1-on-1 for this month yet.</p>
-            <button
-              onClick={handleStartCurrentMonth}
-              disabled={isCreating}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-            >
-              {isCreating ? 'Starting...' : 'Start 1-on-1'}
-            </button>
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">No 1-on-1 Scheduled Yet</h4>
+            <p className="text-gray-600 mb-1">Your manager hasn't created this month's 1-on-1 yet.</p>
+            <p className="text-sm text-gray-500">You'll be able to start once your manager initiates it.</p>
           </div>
         )}
       </div>
@@ -168,7 +142,7 @@ export function MyOneOnOnes({ oneOnOnes, developerId, currentMonth }: MyOneOnOne
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(oneOnOne.status)}`}
+                        className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadge(oneOnOne.status)}`}
                       >
                         {oneOnOne.status}
                       </span>

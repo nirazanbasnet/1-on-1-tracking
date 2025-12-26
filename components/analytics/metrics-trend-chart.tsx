@@ -18,16 +18,16 @@ interface MetricsTrendChartProps {
 
 export function MetricsTrendChart({ data }: MetricsTrendChartProps) {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Trends</h3>
-            <div className="h-80 w-full">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Performance Trends</h3>
+            <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={data}
                         margin={{
                             top: 5,
-                            right: 30,
-                            left: 20,
+                            right: 10,
+                            left: -10,
                             bottom: 5,
                         }}
                     >
@@ -38,6 +38,7 @@ export function MetricsTrendChart({ data }: MetricsTrendChartProps) {
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
+                            dy={10}
                         />
                         <YAxis
                             stroke="#6B7280"
@@ -47,32 +48,35 @@ export function MetricsTrendChart({ data }: MetricsTrendChartProps) {
                             domain={[0, 5]}
                         />
                         <Tooltip
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            contentStyle={{ borderRadius: '6px', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }}
                         />
-                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                        <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }} iconSize={8} />
                         <Line
                             type="monotone"
                             dataKey="developer"
                             name="Developer Self-Rating"
                             stroke="#3B82F6"
-                            activeDot={{ r: 6 }}
+                            activeDot={{ r: 4 }}
                             strokeWidth={2}
+                            dot={{ r: 2 }}
                         />
                         <Line
                             type="monotone"
                             dataKey="manager"
                             name="Manager Rating"
                             stroke="#10B981"
-                            activeDot={{ r: 6 }}
+                            activeDot={{ r: 4 }}
                             strokeWidth={2}
+                            dot={{ r: 2 }}
                         />
                         <Line
                             type="monotone"
                             dataKey="teamAverage"
                             name="Team Average"
                             stroke="#9CA3AF"
-                            strokeDasharray="5 5"
-                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            strokeWidth={1.5}
+                            dot={false}
                         />
                     </LineChart>
                 </ResponsiveContainer>

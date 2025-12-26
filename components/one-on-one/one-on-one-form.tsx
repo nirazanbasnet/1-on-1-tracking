@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { updateOneOnOneStatus } from '@/app/actions/one-on-ones';
 import type { Question, Answer, Note, ActionItem } from '@/lib/types/database';
 import { QuestionCard } from './question-card';
 import { ActionItemsSection } from './action-items-section';
+
+type QuestionCategory = 'research' | 'strategy' | 'core_qualities' | 'leadership' | 'technical';
 
 interface OneOnOneWithRelations {
   id: string;
@@ -67,6 +69,43 @@ export function OneOnOneForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<QuestionCategory>('research');
+
+  // Group questions by category
+  const questionsByCategory = useMemo(() => {
+    const grouped: Record<QuestionCategory, Question[]> = {
+      research: [],
+      strategy: [],
+      core_qualities: [],
+      leadership: [],
+      technical: []
+    };
+
+    questions.forEach((question: any) => {
+      const category = question.category as QuestionCategory;
+      if (category && grouped[category]) {
+        grouped[category].push(question);
+      }
+    });
+
+    return grouped;
+  }, [questions]);
+
+  const categoryLabels: Record<QuestionCategory, string> = {
+    research: 'Research',
+    strategy: 'Strategy',
+    core_qualities: 'Core Qualities',
+    leadership: 'Leadership',
+    technical: 'Technical'
+  };
+
+  const categoryIcons: Record<QuestionCategory, string> = {
+    research: '🔍',
+    strategy: '🎯',
+    core_qualities: '⭐',
+    leadership: '👥',
+    technical: '⚙️'
+  };
 
   const handleAnswerChange = (questionId: string, type: 'rating' | 'text', value: number | string) => {
     setAnswers((prev) => ({
@@ -84,25 +123,29 @@ export function OneOnOneForm({
     setSuccessMessage(null);
 
     try {
-      // Save all answers
-      for (const [questionId, answer] of Object.entries(answers)) {
-        if (answer.rating !== undefined || answer.text) {
-          const response = await fetch('/api/one-on-ones/answers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              one_on_one_id: oneOnOne.id,
-              question_id: questionId,
-              answer_type: userRole,
-              rating_value: answer.rating,
-              text_value: answer.text,
-            }),
-          });
+      // Save all answers in a single batch request
+      const answersToSave = Object.entries(answers)
+        .filter(([_, answer]) => answer.rating !== undefined || answer.text)
+        .map(([questionId, answer]) => ({
+          question_id: questionId,
+          rating_value: answer.rating,
+          text_value: answer.text,
+        }));
 
-          const result = await response.json();
-          if (!response.ok) {
-            throw new Error(result.error || 'Failed to save answer');
-          }
+      if (answersToSave.length > 0) {
+        const response = await fetch('/api/one-on-ones/answers/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            one_on_one_id: oneOnOne.id,
+            answer_type: userRole,
+            answers: answersToSave,
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to save answers');
         }
       }
 
@@ -141,25 +184,29 @@ export function OneOnOneForm({
     setSuccessMessage(null);
 
     try {
-      // Save all answers first
-      for (const [questionId, answer] of Object.entries(answers)) {
-        if (answer.rating !== undefined || answer.text) {
-          const response = await fetch('/api/one-on-ones/answers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              one_on_one_id: oneOnOne.id,
-              question_id: questionId,
-              answer_type: userRole,
-              rating_value: answer.rating,
-              text_value: answer.text,
-            }),
-          });
+      // Save all answers in a single batch request
+      const answersToSave = Object.entries(answers)
+        .filter(([_, answer]) => answer.rating !== undefined || answer.text)
+        .map(([questionId, answer]) => ({
+          question_id: questionId,
+          rating_value: answer.rating,
+          text_value: answer.text,
+        }));
 
-          const result = await response.json();
-          if (!response.ok) {
-            throw new Error(result.error || 'Failed to save answer');
-          }
+      if (answersToSave.length > 0) {
+        const response = await fetch('/api/one-on-ones/answers/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            one_on_one_id: oneOnOne.id,
+            answer_type: userRole,
+            answers: answersToSave,
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to save answers');
         }
       }
 
@@ -257,31 +304,78 @@ export function OneOnOneForm({
         )}
       </div>
 
-      {/* Questions */}
-      <div className="space-y-4">
-        {questions.map((question, index) => {
-          const answer = answers[question.id] || {};
-          const developerAnswer = existingAnswers.find(
-            (a) => a.question_id === question.id && a.answer_type === 'developer'
-          );
-          const managerAnswer = existingAnswers.find(
-            (a) => a.question_id === question.id && a.answer_type === 'manager'
-          );
+      {/* Category Tabs */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px overflow-x-auto">
+            {(Object.keys(categoryLabels) as QuestionCategory[]).map((category) => {
+              const count = questionsByCategory[category].length;
+              if (count === 0) return null;
 
-          return (
-            <QuestionCard
-              key={question.id}
-              question={question}
-              index={index}
-              answer={answer}
-              developerAnswer={developerAnswer}
-              managerAnswer={managerAnswer}
-              userRole={userRole}
-              readOnly={readOnly}
-              onChange={(type, value) => handleAnswerChange(question.id, type, value)}
-            />
-          );
-        })}
+              return (
+                <button
+                  key={category}
+                  onClick={() => setActiveTab(category)}
+                  className={`
+                    flex-1 min-w-max px-6 py-4 text-sm font-medium border-b-2 transition-colors
+                    ${activeTab === category
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-lg">{categoryIcons[category]}</span>
+                    <span>{categoryLabels[category]}</span>
+                    <span className={`
+                      ml-2 px-2 py-0.5 rounded-full text-xs
+                      ${activeTab === category
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-gray-100 text-gray-600'
+                      }
+                    `}>
+                      {count}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          <div className="space-y-4">
+            {questionsByCategory[activeTab].map((question, index) => {
+              const answer = answers[question.id] || {};
+              const developerAnswer = existingAnswers.find(
+                (a) => a.question_id === question.id && a.answer_type === 'developer'
+              );
+              const managerAnswer = existingAnswers.find(
+                (a) => a.question_id === question.id && a.answer_type === 'manager'
+              );
+
+              return (
+                <QuestionCard
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  answer={answer}
+                  developerAnswer={developerAnswer}
+                  managerAnswer={managerAnswer}
+                  userRole={userRole}
+                  readOnly={readOnly}
+                  onChange={(type, value) => handleAnswerChange(question.id, type, value)}
+                />
+              );
+            })}
+          </div>
+
+          {questionsByCategory[activeTab].length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No questions in this category</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Notes Section */}

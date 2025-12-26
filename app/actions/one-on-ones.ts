@@ -61,10 +61,10 @@ export async function getOrCreateCurrentMonthOneOnOne(developerId: string) {
   const user = await requireAuth();
   const supabase = await createClient();
 
-  // Verify the user is the developer or their manager
+  // Verify the user is the developer
   const { data: developer } = await supabase
     .from('app_users')
-    .select('*, team:teams!team_id(manager_id)')
+    .select('id, email, full_name, role')
     .eq('id', developerId)
     .single();
 
@@ -72,8 +72,24 @@ export async function getOrCreateCurrentMonthOneOnOne(developerId: string) {
     throw new Error('Developer not found');
   }
 
+  // Get developer's team and manager through user_teams junction table
+  const { data: userTeam } = await supabase
+    .from('user_teams')
+    .select(`
+      team_id,
+      teams!inner(id, name, manager_id)
+    `)
+    .eq('user_id', developerId)
+    .limit(1)
+    .maybeSingle();
+
+  // Transform team from array to object
+  const team = userTeam && Array.isArray(userTeam.teams) && userTeam.teams.length > 0
+    ? userTeam.teams[0]
+    : userTeam?.teams as any;
+
   const isOwnProfile = user.id === developerId;
-  const isTheirManager = developer.team?.manager_id === user.id;
+  const isTheirManager = team?.manager_id === user.id;
   const isAdmin = user.role === 'admin';
 
   if (!isOwnProfile && !isTheirManager && !isAdmin) {
@@ -84,32 +100,40 @@ export async function getOrCreateCurrentMonthOneOnOne(developerId: string) {
   const now = new Date();
   const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  // Get the manager ID (either from team or current user if they're the manager)
-  const managerId = developer.team?.manager_id;
+  // Get the manager ID from the team
+  const managerId = team?.manager_id;
   if (!managerId) {
     throw new Error('Developer does not have a manager assigned');
   }
 
-  // Try to find existing 1-on-1
+  // Try to find the most recent 1-on-1 for this month
   const { data: existing } = await supabase
     .from('one_on_ones')
     .select('*')
     .eq('developer_id', developerId)
     .eq('manager_id', managerId)
     .eq('month_year', monthYear)
-    .single();
+    .order('session_number', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (existing) {
     return existing;
   }
 
-  // Create new 1-on-1
-  const { data: newOneOnOne, error } = await supabase
+  // Create new 1-on-1 using admin client to bypass RLS (permissions already checked above)
+  const { createAdminClient } = await import('@/lib/supabase/server');
+  const adminSupabase = createAdminClient();
+
+  const { data: newOneOnOne, error } = await adminSupabase
     .from('one_on_ones')
     .insert({
       developer_id: developerId,
       manager_id: managerId,
+      team_id: userTeam?.team_id,
       month_year: monthYear,
+      session_number: 1,
+      title: 'Session 1',
       status: 'draft',
     })
     .select()
@@ -241,10 +265,10 @@ export async function createOneOnOne(developerId: string, monthYear: string) {
     throw new Error('Only managers can create 1-on-1s');
   }
 
-  // Get the developer's team
+  // Get the developer
   const { data: developer } = await supabase
     .from('app_users')
-    .select('*, team:teams!team_id(manager_id)')
+    .select('id, email, full_name, role')
     .eq('id', developerId)
     .single();
 
@@ -252,39 +276,63 @@ export async function createOneOnOne(developerId: string, monthYear: string) {
     throw new Error('Developer not found');
   }
 
+  // Get developer's team and manager through user_teams junction table
+  const { data: userTeam } = await supabase
+    .from('user_teams')
+    .select(`
+      team_id,
+      teams!inner(id, name, manager_id)
+    `)
+    .eq('user_id', developerId)
+    .limit(1)
+    .maybeSingle();
+
+  // Transform team from array to object
+  const team = userTeam && Array.isArray(userTeam.teams) && userTeam.teams.length > 0
+    ? userTeam.teams[0]
+    : userTeam?.teams as any;
+
   // Verify the current user is the developer's manager
-  const isTheirManager = developer.team?.manager_id === user.id;
+  const isTheirManager = team?.manager_id === user.id;
   const isAdmin = user.role === 'admin';
 
   if (!isTheirManager && !isAdmin) {
     throw new Error('You can only create 1-on-1s for your team members');
   }
 
-  const managerId = developer.team?.manager_id;
+  const managerId = team?.manager_id;
   if (!managerId) {
     throw new Error('Developer does not have a manager assigned');
   }
 
-  // Check if 1-on-1 already exists
-  const { data: existing } = await supabase
+  // Find the highest session number for this month to create next session
+  const { data: existingSessions } = await supabase
     .from('one_on_ones')
-    .select('id')
+    .select('session_number')
     .eq('developer_id', developerId)
     .eq('manager_id', managerId)
     .eq('month_year', monthYear)
-    .single();
+    .order('session_number', { ascending: false })
+    .limit(1);
 
-  if (existing) {
-    throw new Error('A 1-on-1 already exists for this developer and month');
-  }
+  // Calculate next session number
+  const nextSessionNumber = existingSessions && existingSessions.length > 0
+    ? (existingSessions[0].session_number || 0) + 1
+    : 1;
 
-  // Create new 1-on-1
-  const { data: newOneOnOne, error } = await supabase
+  // Create new 1-on-1 using admin client to bypass RLS (permissions already checked above)
+  const { createAdminClient } = await import('@/lib/supabase/server');
+  const adminSupabase = createAdminClient();
+
+  const { data: newOneOnOne, error } = await adminSupabase
     .from('one_on_ones')
     .insert({
       developer_id: developerId,
       manager_id: managerId,
+      team_id: userTeam?.team_id,
       month_year: monthYear,
+      session_number: nextSessionNumber,
+      title: `Session ${nextSessionNumber}`,
       status: 'draft',
     })
     .select()

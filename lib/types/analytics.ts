@@ -16,6 +16,10 @@ export interface DeveloperAnalytics {
   developer_name: string;
   developer_email: string;
   monthly_metrics: MonthlyMetrics[];
+  category_scores?: {
+    month_year: string;
+    answers: any[];
+  } | null;
   overall_stats: {
     avg_developer_rating: number | null;
     avg_manager_rating: number | null;
