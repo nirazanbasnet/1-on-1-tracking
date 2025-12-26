@@ -79,8 +79,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Manually recalculating metrics for:', one_on_one_id);
-
     const result = await calculateAndSaveMetrics(one_on_one_id);
 
     return NextResponse.json({

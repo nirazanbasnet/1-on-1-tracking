@@ -12,8 +12,6 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'manager
 
   const supabase = await createClient();
 
-  console.log('Updating user role:', { userId, newRole });
-
   // First, verify the user exists
   const { data: existingUser, error: fetchError } = await supabase
     .from('app_users')
@@ -26,8 +24,6 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'manager
     throw new Error('User not found');
   }
 
-  console.log('Current user before update:', existingUser);
-
   // Perform the update
   const { error: updateError, count } = await supabase
     .from('app_users')
@@ -39,16 +35,12 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'manager
     throw new Error(`Failed to update user role: ${updateError.message}`);
   }
 
-  console.log('Update completed, affected rows:', count);
-
   // Verify the update
   const { data: updatedUser } = await supabase
     .from('app_users')
     .select('id, email, role')
     .eq('id', userId)
     .single();
-
-  console.log('User after update:', updatedUser);
 
   revalidatePath('/dashboard');
   return { success: true, data: updatedUser };

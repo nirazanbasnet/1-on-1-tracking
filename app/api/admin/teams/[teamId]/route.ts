@@ -48,8 +48,6 @@ export async function PATCH(
       updateData.manager_id = manager_id;
     }
 
-    console.log('API: Updating team:', { teamId, updateData });
-
     // Perform the update
     const { data, error } = await supabase
       .from('teams')
@@ -72,8 +70,6 @@ export async function PATCH(
         { status: 404 }
       );
     }
-
-    console.log('API: Team updated successfully:', data);
 
     // Revalidate the dashboard to ensure fresh data
     revalidatePath('/dashboard');
@@ -138,8 +134,6 @@ export async function DELETE(
         { status: 500 }
       );
     }
-
-    console.log('API: Team deleted successfully:', teamId);
 
     // Revalidate the dashboard
     revalidatePath('/dashboard');

@@ -92,13 +92,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Creating 1-on-1:', {
-      developer_id,
-      manager_id: managerId,
-      team_id: userTeam.team_id,
-      month_year
-    });
-
     // Check if 1-on-1 already exists
     const { data: existing } = await supabase
       .from('one_on_ones')
@@ -135,8 +128,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log('1-on-1 created successfully:', newOneOnOne);
 
     // Revalidate the dashboard
     revalidatePath('/dashboard');

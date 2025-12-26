@@ -55,8 +55,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
         requestBody.manager_id = newTeamManager;
       }
 
-      console.log('Creating team:', requestBody);
-
       const response = await fetch('/api/admin/teams', {
         method: 'POST',
         headers: {
@@ -70,8 +68,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create team');
       }
-
-      console.log('Team created:', result);
 
       // Reset form
       setNewTeamName('');
@@ -105,8 +101,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
         manager_id: editTeamManager || null
       };
 
-      console.log('Updating team:', { teamId, requestBody });
-
       const response = await fetch(`/api/admin/teams/${teamId}`, {
         method: 'PATCH',
         headers: {
@@ -120,8 +114,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update team');
       }
-
-      console.log('Team updated:', result);
 
       // Reset form
       setEditingTeamId(null);
@@ -149,8 +141,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
     setSuccessMessage(null);
 
     try {
-      console.log('Deleting team:', teamId);
-
       const response = await fetch(`/api/admin/teams/${teamId}`, {
         method: 'DELETE',
       });
@@ -160,8 +150,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
       if (!response.ok) {
         throw new Error(result.error || 'Failed to delete team');
       }
-
-      console.log('Team deleted:', result);
 
       setSuccessMessage('Team deleted successfully!');
 

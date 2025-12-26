@@ -60,8 +60,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Saving answer:', { one_on_one_id, question_id, answer_type });
-
     // Check if answer already exists
     const { data: existing } = await supabase
       .from('answers')
@@ -95,7 +93,6 @@ export async function POST(request: NextRequest) {
       }
 
       result = data;
-      console.log('Answer updated:', result);
     } else {
       // Create new answer
       const { data, error } = await supabase
@@ -119,7 +116,6 @@ export async function POST(request: NextRequest) {
       }
 
       result = data;
-      console.log('Answer created:', result);
     }
 
     revalidatePath(`/one-on-one/${one_on_one_id}`);

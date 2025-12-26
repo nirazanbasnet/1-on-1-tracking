@@ -42,24 +42,27 @@ async function getStats() {
 async function getAllUsers() {
   const supabase = await createClient();
 
-  // Fetch all users
-  const { data: users } = await supabase
+  // Fetch all users (removed team_id - it doesn't exist anymore, we use user_teams junction table)
+  const { data: users, error: usersError } = await supabase
     .from('app_users')
-    .select('id, email, full_name, role, team_id, created_at, updated_at')
+    .select('id, email, full_name, role, created_at, updated_at')
     .order('created_at', { ascending: false });
 
   if (!users) return [];
 
   // Fetch team assignments for all users
-  const { data: userTeams } = await supabase
+  const { data: userTeams, error: teamsError } = await supabase
     .from('user_teams')
     .select('user_id, team_id');
 
-  // Map team_ids to users
-  return users.map(user => ({
+  // Map team_ids to users (for multi-team support)
+  const result = users.map(user => ({
     ...user,
+    team_id: null, // Kept for backward compatibility with AppUser type
     team_ids: userTeams?.filter(ut => ut.user_id === user.id).map(ut => ut.team_id) || []
   }));
+
+  return result;
 }
 
 async function getAllTeams() {
@@ -87,10 +90,15 @@ async function getManagers() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('app_users')
-    .select('id, email, full_name, role, team_id, created_at, updated_at')
+    .select('id, email, full_name, role, created_at, updated_at')
     .in('role', ['admin', 'manager'])
     .order('full_name');
-  return data || [];
+
+  // Add team_id as null for backward compatibility
+  return (data || []).map(manager => ({
+    ...manager,
+    team_id: null
+  }));
 }
 
 async function getTeamMembersWithOneOnOnes(managerId: string, currentMonth: string) {
@@ -208,9 +216,9 @@ export default async function DashboardPage() {
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   const stats = await getStats();
-  const users = profile.role === 'admin' ? await getAllUsers() : [];
   const teams = profile.role === 'admin' ? await getAllTeams() : [];
   const managers = profile.role === 'admin' ? await getManagers() : [];
+  const users = profile.role === 'admin' ? await getAllUsers() : [];
 
   // Manager data
   const managerTeamData = profile.role === 'manager'
@@ -404,14 +412,28 @@ export default async function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <UserManagementRow
-                        key={user.id}
-                        user={user}
-                        teams={teams}
-                        currentUserId={profile.id}
-                      />
-                    ))}
+                    {users.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                          <div className="flex flex-col items-center">
+                            <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <p className="text-lg font-medium mb-2">No users found</p>
+                            <p className="text-sm">Users will appear here after they sign up</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      users.map((user) => (
+                        <UserManagementRow
+                          key={user.id}
+                          user={user}
+                          teams={teams}
+                          currentUserId={profile.id}
+                        />
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

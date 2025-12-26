@@ -30,8 +30,6 @@ export async function POST(request: NextRequest) {
       teamData.manager_id = manager_id;
     }
 
-    console.log('API: Creating team:', teamData);
-
     // Create the team
     const { data, error } = await supabase
       .from('teams')
@@ -46,8 +44,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log('API: Team created successfully:', data);
 
     // Revalidate the dashboard to ensure fresh data
     revalidatePath('/dashboard');

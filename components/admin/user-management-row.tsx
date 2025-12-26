@@ -51,16 +51,6 @@ export function UserManagementRow({ user, teams, currentUserId }: UserManagement
       const roleChanged = selectedRole !== user.role;
       const teamsChanged = JSON.stringify(selectedTeams.sort()) !== JSON.stringify((user.team_ids || []).sort());
 
-      console.log('Saving user changes:', {
-        userId: user.id,
-        oldRole: user.role,
-        newRole: selectedRole,
-        oldTeams: user.team_ids,
-        newTeams: selectedTeams,
-        roleChanged,
-        teamsChanged
-      });
-
       // Only send update if something changed
       if (roleChanged || teamsChanged) {
         const updateData: { role?: string; team_ids?: string[] } = {};
@@ -87,8 +77,6 @@ export function UserManagementRow({ user, teams, currentUserId }: UserManagement
         if (!response.ok) {
           throw new Error(result.error || 'Failed to update user');
         }
-
-        console.log('API response:', result);
 
         // Update current values immediately for instant UI feedback
         setCurrentRole(selectedRole);

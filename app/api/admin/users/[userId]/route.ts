@@ -117,8 +117,6 @@ export async function PATCH(
       team_ids: userTeams?.map(ut => ut.team_id) || []
     };
 
-    console.log('API: User updated successfully:', data);
-
     // Revalidate the dashboard to ensure fresh data
     revalidatePath('/dashboard');
 

@@ -60,8 +60,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Saving note:', { one_on_one_id, note_type, created_by: user.id });
-
     // Check if note already exists
     const { data: existing } = await supabase
       .from('notes')
@@ -94,7 +92,6 @@ export async function POST(request: NextRequest) {
       }
 
       result = data;
-      console.log('Note updated:', result);
     } else {
       // Create new note
       const { data, error } = await supabase
@@ -117,7 +114,6 @@ export async function POST(request: NextRequest) {
       }
 
       result = data;
-      console.log('Note created:', result);
     }
 
     revalidatePath(`/one-on-one/${one_on_one_id}`);

@@ -29,8 +29,6 @@ export function TeamOneOnOnes({ teamMembers, currentMonth }: TeamOneOnOnesProps)
     setSuccessMessage(null);
 
     try {
-      console.log('Creating 1-on-1 for developer:', { developerId, currentMonth });
-
       const response = await fetch('/api/manager/one-on-ones', {
         method: 'POST',
         headers: {
@@ -47,8 +45,6 @@ export function TeamOneOnOnes({ teamMembers, currentMonth }: TeamOneOnOnesProps)
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create 1-on-1');
       }
-
-      console.log('1-on-1 created successfully:', result);
 
       setSuccessMessage('1-on-1 created successfully!');
 
