@@ -74,7 +74,7 @@ async function getMemberHistory(memberId: string, managerId: string) {
           id,
           rating_value,
           text_value,
-          question:questions(
+          question:questions!inner(
             id,
             question_text,
             category
@@ -82,7 +82,13 @@ async function getMemberHistory(memberId: string, managerId: string) {
         `)
         .eq('one_on_one_id', oneOnOne.id);
 
-      const categoryScores = calculateCategoryScores(answers || []);
+      // Transform the data to match the expected type
+      const transformedAnswers = (answers || []).map(answer => ({
+        rating_value: answer.rating_value,
+        question: Array.isArray(answer.question) ? answer.question[0] : answer.question
+      }));
+
+      const categoryScores = calculateCategoryScores(transformedAnswers);
 
       return {
         ...oneOnOne,
