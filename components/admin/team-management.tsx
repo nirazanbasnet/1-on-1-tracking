@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Team, AppUser } from '@/lib/types/database';
+import { toast } from '@/components/ui/use-toast';
 
 interface TeamWithManager extends Team {
   manager?: Pick<AppUser, 'email' | 'full_name'> | null;
@@ -33,18 +34,18 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
   const [editTeamName, setEditTeamName] = useState('');
   const [editTeamManager, setEditTeamManager] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
-      setError('Team name is required');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Team name is required',
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
-    setSuccessMessage(null);
 
     try {
       const requestBody: { name: string; manager_id?: string } = {
@@ -73,13 +74,21 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
       setNewTeamName('');
       setNewTeamManager('');
       setIsCreating(false);
-      setSuccessMessage('Team created successfully!');
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Team created successfully!',
+      });
 
       // Refresh to show new data
       router.refresh();
     } catch (err) {
       console.error('Error creating team:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create team');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to create team',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -87,13 +96,15 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
 
   const handleUpdateTeam = async (teamId: string) => {
     if (!editTeamName.trim()) {
-      setError('Team name is required');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Team name is required',
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
-    setSuccessMessage(null);
 
     try {
       const requestBody: { name: string; manager_id?: string | null } = {
@@ -119,13 +130,21 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
       setEditingTeamId(null);
       setEditTeamName('');
       setEditTeamManager('');
-      setSuccessMessage('Team updated successfully!');
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Team updated successfully!',
+      });
 
       // Refresh to show new data
       router.refresh();
     } catch (err) {
       console.error('Error updating team:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update team');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to update team',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -137,8 +156,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
     }
 
     setIsSubmitting(true);
-    setError(null);
-    setSuccessMessage(null);
 
     try {
       const response = await fetch(`/api/admin/teams/${teamId}`, {
@@ -151,13 +168,21 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
         throw new Error(result.error || 'Failed to delete team');
       }
 
-      setSuccessMessage('Team deleted successfully!');
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Team deleted successfully!',
+      });
 
       // Refresh to show new data
       router.refresh();
     } catch (err) {
       console.error('Error deleting team:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete team');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to delete team',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -167,21 +192,18 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
     setEditingTeamId(team.id);
     setEditTeamName(team.name);
     setEditTeamManager(team.manager_id || '');
-    setError(null);
   };
 
   const cancelEditing = () => {
     setEditingTeamId(null);
     setEditTeamName('');
     setEditTeamManager('');
-    setError(null);
   };
 
   const cancelCreating = () => {
     setIsCreating(false);
     setNewTeamName('');
     setNewTeamManager('');
-    setError(null);
   };
 
   return (
@@ -203,18 +225,6 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
           </button>
         )}
       </div>
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-600">{successMessage}</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Create New Team Card */}

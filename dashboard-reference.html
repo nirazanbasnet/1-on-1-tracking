@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Team Progress Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-primary: #EBEBEB;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1A1A1A;
+            --text-secondary: #999999;
+            --text-tertiary: #BDBDBD;
+
+            /* Accent Colors */
+            --accent-orange: #FF9B7B;
+            --accent-blue: #6B9FD1;
+            --accent-green: #66D9A6;
+            --accent-red: #FF6B6B;
+            --accent-purple: #A78BFA;
+
+            /* UI Colors */
+            --upgrade-bg: #E8F0FE;
+            --upgrade-btn: #6B9FD1;
+            --border-subtle: #E5E5E5;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+            /* Spacing */
+            --space-xs: 8px;
+            --space-sm: 12px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            /* Typography */
+            --font-family: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Layout Grid */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 260px 1fr 340px;
+            min-height: 100vh;
+            gap: 0;
+        }
+
+        /* ==================== LEFT SIDEBAR ==================== */
+        .sidebar-left {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-subtle);
+            padding: var(--space-xl);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--text-primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: var(--space-xs);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: #F8F8F8;
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            color: var(--text-primary);
+            background: #F8F8F8;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .nav-link:hover .nav-icon,
+        .nav-link.active .nav-icon {
+            opacity: 1;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            color: var(--text-tertiary);
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        /* Upgrade Card */
+        .upgrade-card {
+            background: var(--upgrade-bg);
+            padding: var(--space-lg);
+            border-radius: 12px;
+            margin-bottom: var(--space-lg);
+            animation: fadeInUp 0.6s ease 0.3s backwards;
+        }
+
+        .upgrade-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .upgrade-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            line-height: 1.4;
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 10px 20px;
+            background: var(--upgrade-btn);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: var(--font-family);
+        }
+
+        .upgrade-btn:hover {
+            background: #5A8DC2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(107, 159, 209, 0.3);
+        }
+
+        /* Bottom Links */
+        .sidebar-footer {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            background: #F8F8F8;
+            color: var(--text-primary);
+        }
+
+        .footer-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            padding: var(--space-xl);
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .main-header {
+            margin-bottom: var(--space-xl);
+            animation: fadeInDown 0.5s ease;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .greeting {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .date-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .calendar-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: var(--space-lg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive { color: var(--accent-green); }
+        .stat-change.negative { color: var(--accent-red); }
+
+        /* Performance Chart */
+        .chart-section {
+            background: var(--bg-secondary);
+            padding: var(--space-xl);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-xl);
+            animation: fadeInUp 0.6s ease 0.4s backwards;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .date-select {
+            padding: 8px 16px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            background: white;
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .date-select:hover {
+            border-color: var(--text-tertiary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            margin-bottom: var(--space-md);
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            background: var(--text-primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+            min-width: 160px;
+        }
+
+        .chart-tooltip.active {
+            opacity: 1;
+        }
+
+        .tooltip-date {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .tooltip-label {
+            opacity: 0.8;
+        }
+
+        .tooltip-value {
+            font-weight: 600;
+        }
+
+        /* Tasks Section */
+        .tasks-section {
+            background: var(--bg-secondary);
+            padding: var(--space-xl);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            animation: fadeInUp 0.6s ease 0.5s backwards;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .tasks-header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .tasks-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .progress-badge {
+            padding: 6px 12px;
+            background: #F5F5F5;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.2s ease;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            padding-left: var(--space-sm);
+        }
+
+        .task-icon-wrapper {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .task-status {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .task-status.in-progress {
+            background: #FFF4F0;
+            color: var(--accent-orange);
+        }
+
+        .task-status.on-hold {
+            background: #EFF6FF;
+            color: var(--accent-blue);
+        }
+
+        .task-status.done {
+            background: #F0FDF4;
+            color: var(--accent-green);
+        }
+
+        .task-time {
+            color: var(--text-tertiary);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-time::before {
+            content: "⏱";
+            opacity: 0.5;
+        }
+
+        .task-menu {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .task-menu:hover {
+            background: #F5F5F5;
+            color: var(--text-primary);
+        }
+
+        /* ==================== RIGHT SIDEBAR ==================== */
+        .sidebar-right {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-subtle);
+            padding: var(--space-xl);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* User Profile Card */
+        .user-card {
+            background: #F8F8F8;
+            padding: var(--space-lg);
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: var(--space-xl);
+            animation: fadeInRight 0.5s ease 0.2s backwards;
+        }
+
+        .user-avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: var(--space-md);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-green);
+            border: 3px solid white;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .user-handle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: var(--space-md);
+        }
+
+        .user-actions {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Activity Feed */
+        .activity-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: var(--space-lg);
+        }
+
+        .activity-feed {
+            flex: 1;
+            margin-bottom: var(--space-lg);
+        }
+
+        .activity-item {
+            margin-bottom: var(--space-lg);
+            animation: fadeInRight 0.5s ease backwards;
+        }
+
+        .activity-item:nth-child(1) { animation-delay: 0.3s; }
+        .activity-item:nth-child(2) { animation-delay: 0.4s; }
+        .activity-item:nth-child(3) { animation-delay: 0.5s; }
+
+        .activity-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .activity-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .activity-avatar.online {
+            border: 2px solid var(--accent-green);
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .activity-name {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .activity-action {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .activity-message {
+            background: #F8F8F8;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: var(--space-sm);
+            position: relative;
+        }
+
+        .activity-message::after {
+            content: "👍";
+            position: absolute;
+            bottom: -8px;
+            right: 12px;
+            font-size: 16px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .activity-file {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background: #F8F8F8;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 8px;
+            margin-top: var(--space-sm);
+        }
+
+        .file-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-blue);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .file-download {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .file-download:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Message Input */
+        .message-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: #F8F8F8;
+            border-radius: 10px;
+            margin-top: auto;
+        }
+
+        .message-icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .message-icon-btn:hover {
+            background: white;
+            color: var(--text-primary);
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: var(--font-family);
+            font-size: 14px;
+            outline: none;
+            padding: 8px 0;
+        }
+
+        .message-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar-left">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <span>logip</span>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                            </svg>
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                            </svg>
+                            Projects
+                            <span class="nav-badge">+</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                            </svg>
+                            Tasks
+                            <span class="nav-badge">+</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                            </svg>
+                            Team
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="upgrade-card">
+                <div class="upgrade-title">Upgrade to Pro</div>
+                <div class="upgrade-subtitle">Get 1 month free and unlock</div>
+                <button class="upgrade-btn">Upgrade</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="footer-link">
+                    <svg class="footer-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                    </svg>
+                    Help & information
+                </a>
+                <a href="#" class="footer-link">
+                    <svg class="footer-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                    </svg>
+                    Log out
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-top">
+                    <div>
+                        <h1 class="greeting">Hello, Margaret</h1>
+                        <p class="subtitle">Track team progress here. You almost reach a goal!</p>
+                    </div>
+                    <div class="date-badge">
+                        <svg class="calendar-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        16 May, 2023
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: #F0FDF4;">
+                            <span style="color: #66D9A6;">👍</span>
+                        </div>
+                        <div class="stat-label">Finished</div>
+                    </div>
+                    <div class="stat-value">18</div>
+                    <div class="stat-change positive">▴ +8 tasks</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: #EFF6FF;">
+                            <span style="color: #6B9FD1;">⏱</span>
+                        </div>
+                        <div class="stat-label">Tracked</div>
+                    </div>
+                    <div class="stat-value">31h</div>
+                    <div class="stat-change negative">▾ -6 hours</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: #FFF4F0;">
+                            <span style="color: #FF9B7B;">🎯</span>
+                        </div>
+                        <div class="stat-label">Efficiency</div>
+                    </div>
+                    <div class="stat-value">93%</div>
+                    <div class="stat-change positive">▴ +12%</div>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <section class="chart-section">
+                <div class="chart-header">
+                    <h2 class="chart-title">Performance</h2>
+                    <select class="date-select">
+                        <option>01-07 May</option>
+                        <option>08-14 May</option>
+                        <option>15-21 May</option>
+                    </select>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-tooltip" id="chartTooltip">
+                        <div class="tooltip-date">03 May 2023</div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">This month</span>
+                            <span class="tooltip-value">7h</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Last month</span>
+                            <span class="tooltip-value">6h</span>
+                        </div>
+                    </div>
+                    <svg id="performanceChart" width="100%" height="280"></svg>
+                </div>
+            </section>
+
+            <!-- Current Tasks -->
+            <section class="tasks-section">
+                <div class="tasks-header">
+                    <div class="tasks-header-left">
+                        <h2 class="tasks-title">Current Tasks</h2>
+                        <span class="progress-badge">Done 30%</span>
+                    </div>
+                    <select class="date-select">
+                        <option>Week</option>
+                        <option>Month</option>
+                        <option>Year</option>
+                    </select>
+                </div>
+
+                <div class="tasks-list">
+                    <div class="task-item">
+                        <div class="task-icon-wrapper" style="background: #FFF4F0;">
+                            <span style="color: #FF9B7B;">😊</span>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-name">Product Review for UIB Market</div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-status in-progress">In progress</span>
+                            <span class="task-time">4h</span>
+                        </div>
+                        <button class="task-menu">⋯</button>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-icon-wrapper" style="background: #FFF9E6;">
+                            <span style="color: #F59E0B;">🔍</span>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-name">UX Research for Product</div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-status on-hold">On hold</span>
+                            <span class="task-time">8h</span>
+                        </div>
+                        <button class="task-menu">⋯</button>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-icon-wrapper" style="background: #EFF6FF;">
+                            <span style="color: #6B9FD1;">🖼</span>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-name">App design and development</div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-status done">Done</span>
+                            <span class="task-time">32h</span>
+                        </div>
+                        <button class="task-menu">⋯</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="sidebar-right">
+            <div class="user-card">
+                <div class="user-avatar-wrapper">
+                    <img src="https://i.pravatar.cc/150?img=5" alt="Megan Norton" class="user-avatar">
+                    <div class="online-indicator"></div>
+                </div>
+                <div class="user-name">Megan Norton</div>
+                <div class="user-handle">@megnorton</div>
+                <div class="user-actions">
+                    <button class="action-btn">📞</button>
+                    <button class="action-btn">📹</button>
+                    <button class="action-btn">⋯</button>
+                </div>
+            </div>
+
+            <div class="activity-section">
+                <h3 class="activity-title">Activity</h3>
+
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <img src="https://i.pravatar.cc/150?img=12" alt="Floyd Miles" class="activity-avatar online">
+                            <div class="activity-info">
+                                <div class="activity-meta">
+                                    <span class="activity-name">Floyd Miles</span>
+                                    <span class="activity-time">10:15 AM</span>
+                                </div>
+                                <div class="activity-action">Commented on Stark Project</div>
+                            </div>
+                        </div>
+                        <div class="activity-message">
+                            Hi! Next week we'll start a new project. I'll tell you all the details later
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <img src="https://i.pravatar.cc/150?img=13" alt="Guy Hawkins" class="activity-avatar online">
+                            <div class="activity-info">
+                                <div class="activity-meta">
+                                    <span class="activity-name">Guy Hawkins</span>
+                                    <span class="activity-time">10:15 AM</span>
+                                </div>
+                                <div class="activity-action">Added a file to 7Heros Project</div>
+                            </div>
+                        </div>
+                        <div class="activity-file">
+                            <div class="file-icon">📄</div>
+                            <div class="file-info">
+                                <div class="file-name">Homepage.fig</div>
+                                <div class="file-size">13.4 MB</div>
+                            </div>
+                            <button class="file-download">↓</button>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <img src="https://i.pravatar.cc/150?img=9" alt="Kristin Watson" class="activity-avatar">
+                            <div class="activity-info">
+                                <div class="activity-meta">
+                                    <span class="activity-name">Kristin Watson</span>
+                                    <span class="activity-time">10:15 AM</span>
+                                </div>
+                                <div class="activity-action">Commented on 7Heros Project</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-input-wrapper">
+                    <button class="message-icon-btn">📎</button>
+                    <input type="text" class="message-input" placeholder="Write a message">
+                    <button class="message-icon-btn">😊</button>
+                    <button class="message-icon-btn">🎤</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Chart Data
+        const chartData = [
+            { day: '01', thisMonth: 6, lastMonth: 5 },
+            { day: '02', thisMonth: 8, lastMonth: 6.5 },
+            { day: '03', thisMonth: 7, lastMonth: 6 },
+            { day: '04', thisMonth: 9, lastMonth: 7.5 },
+            { day: '05', thisMonth: 8.5, lastMonth: 8 },
+            { day: '06', thisMonth: 10, lastMonth: 9 },
+            { day: '07', thisMonth: 9.5, lastMonth: 8.5 }
+        ];
+
+        // Chart Dimensions
+        const svg = document.getElementById('performanceChart');
+        const tooltip = document.getElementById('chartTooltip');
+        const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+        const width = svg.clientWidth - margin.left - margin.right;
+        const height = 280 - margin.top - margin.bottom;
+
+        // Scales
+        const xScale = (i) => margin.left + (i * (width / (chartData.length - 1)));
+        const yScale = (value) => height + margin.top - ((value / 12) * height);
+
+        // Create smooth curve path
+        function createSmoothPath(data, key) {
+            let path = '';
+
+            for (let i = 0; i < data.length; i++) {
+                const x = xScale(i);
+                const y = yScale(data[i][key]);
+
+                if (i === 0) {
+                    path += `M ${x} ${y}`;
+                } else {
+                    const prevX = xScale(i - 1);
+                    const prevY = yScale(data[i - 1][key]);
+                    const cpX = (prevX + x) / 2;
+                    path += ` Q ${cpX} ${prevY}, ${x} ${y}`;
+                }
+            }
+
+            return path;
+        }
+
+        // Create SVG content
+        svg.innerHTML = `
+            <!-- Grid Lines -->
+            <g class="grid">
+                ${[0, 2, 4, 6, 8, 10, 12].map(h => `
+                    <line x1="${margin.left}" y1="${yScale(h)}"
+                          x2="${width + margin.left}" y2="${yScale(h)}"
+                          stroke="#F0F0F0" stroke-width="1"/>
+                    <text x="${margin.left - 10}" y="${yScale(h) + 4}"
+                          fill="#BDBDBD" font-size="12" text-anchor="end">${h}h</text>
+                `).join('')}
+            </g>
+
+            <!-- X-axis Labels -->
+            <g class="x-axis">
+                ${chartData.map((d, i) => `
+                    <text x="${xScale(i)}" y="${height + margin.top + 25}"
+                          fill="#999" font-size="13" text-anchor="middle">${d.day}</text>
+                `).join('')}
+            </g>
+
+            <!-- Lines -->
+            <path d="${createSmoothPath(chartData, 'thisMonth')}"
+                  fill="none" stroke="#FF9B7B" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="filter: drop-shadow(0 2px 4px rgba(255, 155, 123, 0.3))"/>
+
+            <path d="${createSmoothPath(chartData, 'lastMonth')}"
+                  fill="none" stroke="#6B9FD1" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="filter: drop-shadow(0 2px 4px rgba(107, 159, 209, 0.3))"/>
+
+            <!-- Interactive Points -->
+            ${chartData.map((d, i) => `
+                <circle cx="${xScale(i)}" cy="${yScale(d.thisMonth)}" r="5"
+                        fill="#FF9B7B" stroke="white" stroke-width="2"
+                        class="chart-point" data-index="${i}" style="cursor: pointer; opacity: 0;"/>
+                <circle cx="${xScale(i)}" cy="${yScale(d.lastMonth)}" r="5"
+                        fill="#6B9FD1" stroke="white" stroke-width="2"
+                        class="chart-point" data-index="${i}" style="cursor: pointer; opacity: 0;"/>
+            `).join('')}
+
+            <!-- Hover Areas -->
+            ${chartData.map((d, i) => `
+                <rect x="${xScale(i) - 20}" y="${margin.top}" width="40" height="${height}"
+                      fill="transparent" class="hover-area" data-index="${i}"
+                      style="cursor: pointer;"/>
+            `).join('')}
+        `;
+
+        // Tooltip Interaction
+        const hoverAreas = svg.querySelectorAll('.hover-area');
+        const points = svg.querySelectorAll('.chart-point');
+
+        hoverAreas.forEach(area => {
+            area.addEventListener('mouseenter', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                const data = chartData[index];
+
+                // Show tooltip
+                tooltip.innerHTML = `
+                    <div class="tooltip-date">0${data.day} May 2023</div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">This month</span>
+                        <span class="tooltip-value">${data.thisMonth}h</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Last month</span>
+                        <span class="tooltip-value">${data.lastMonth}h</span>
+                    </div>
+                `;
+
+                const x = xScale(index);
+                tooltip.style.left = `${x - 80}px`;
+                tooltip.style.top = `${margin.top}px`;
+                tooltip.classList.add('active');
+
+                // Show points
+                points.forEach(point => {
+                    if (parseInt(point.dataset.index) === index) {
+                        point.style.opacity = '1';
+                    }
+                });
+            });
+
+            area.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('active');
+                points.forEach(point => {
+                    point.style.opacity = '0';
+                });
+            });
+        });
+
+        // Auto-show tooltip on day 03 initially
+        setTimeout(() => {
+            const day03Area = Array.from(hoverAreas).find(area => area.dataset.index === '2');
+            if (day03Area) {
+                day03Area.dispatchEvent(new Event('mouseenter'));
+                setTimeout(() => {
+                    day03Area.dispatchEvent(new Event('mouseleave'));
+                }, 3000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createActionItem, updateActionItem, deleteActionItem } from '@/app/actions/action-items';
 import type { ActionItem } from '@/lib/types/database';
+import { toast } from '@/components/ui/use-toast';
 
 interface ActionItemsSectionProps {
   oneOnOneId: string;
@@ -29,16 +30,18 @@ export function ActionItemsSection({
   const [newItemAssignedTo, setNewItemAssignedTo] = useState<'developer' | 'manager'>('developer');
   const [newItemDueDate, setNewItemDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleAddItem = async () => {
     if (!newItemDescription.trim()) {
-      setError('Description is required');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Description is required',
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const newItem = await createActionItem(
@@ -52,8 +55,17 @@ export function ActionItemsSection({
       setNewItemDescription('');
       setNewItemDueDate('');
       setIsAdding(false);
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Action item created successfully',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create action item');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to create action item',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -69,8 +81,17 @@ export function ActionItemsSection({
             : item
         )
       );
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Action item status updated',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update action item');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to update action item',
+      });
     }
   };
 
@@ -82,8 +103,17 @@ export function ActionItemsSection({
     try {
       await deleteActionItem(itemId);
       setActionItems(actionItems.filter((item) => item.id !== itemId));
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Action item deleted',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete action item');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to delete action item',
+      });
     }
   };
 
@@ -119,12 +149,6 @@ export function ActionItemsSection({
           </button>
         )}
       </div>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
-      )}
 
       {/* Add New Item Form */}
       {isAdding && (
@@ -175,7 +199,6 @@ export function ActionItemsSection({
                   setIsAdding(false);
                   setNewItemDescription('');
                   setNewItemDueDate('');
-                  setError(null);
                 }}
                 disabled={isSubmitting}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"

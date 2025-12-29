@@ -5,6 +5,7 @@ import { updateOneOnOneStatus } from '@/app/actions/one-on-ones';
 import type { Question, Answer, Note, ActionItem } from '@/lib/types/database';
 import { QuestionCard } from './question-card';
 import { ActionItemsSection } from './action-items-section';
+import { toast } from '@/components/ui/use-toast';
 
 type QuestionCategory = 'research' | 'strategy' | 'core_qualities' | 'leadership' | 'technical';
 
@@ -67,8 +68,6 @@ export function OneOnOneForm({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<QuestionCategory>('research');
 
   // Group questions by category
@@ -119,8 +118,6 @@ export function OneOnOneForm({
 
   const handleSaveDraft = async () => {
     setIsSaving(true);
-    setError(null);
-    setSuccessMessage(null);
 
     try {
       // Save all answers in a single batch request
@@ -169,10 +166,18 @@ export function OneOnOneForm({
         }
       }
 
-      setSuccessMessage('Draft saved successfully');
+      toast({
+        variant: 'success',
+        title: 'Draft saved',
+        description: 'Your changes have been saved successfully.',
+      });
     } catch (err) {
       console.error('Error saving draft:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save draft');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to save draft',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -180,8 +185,6 @@ export function OneOnOneForm({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    setError(null);
-    setSuccessMessage(null);
 
     try {
       // Save all answers in a single batch request
@@ -233,10 +236,18 @@ export function OneOnOneForm({
       // Update status
       if (userRole === 'developer' && oneOnOne.status === 'draft') {
         await updateOneOnOneStatus(oneOnOne.id, 'submitted');
-        setSuccessMessage('1-on-1 submitted successfully!');
+        toast({
+          variant: 'success',
+          title: 'Success',
+          description: '1-on-1 submitted successfully!',
+        });
       } else if (userRole === 'manager' && oneOnOne.status === 'submitted') {
         await updateOneOnOneStatus(oneOnOne.id, 'completed');
-        setSuccessMessage('1-on-1 completed successfully!');
+        toast({
+          variant: 'success',
+          title: 'Success',
+          description: '1-on-1 completed successfully!',
+        });
       }
 
       // Redirect to dashboard after a brief delay
@@ -244,7 +255,11 @@ export function OneOnOneForm({
         window.location.href = '/dashboard';
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to submit',
+      });
       setIsSubmitting(false);
     }
   };
@@ -290,18 +305,6 @@ export function OneOnOneForm({
           </div>
           {getStatusBadge()}
         </div>
-
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-600">{successMessage}</p>
-          </div>
-        )}
       </div>
 
       {/* Category Tabs */}

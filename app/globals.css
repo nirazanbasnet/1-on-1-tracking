@@ -67,3 +67,64 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .sidebar-card {
+    @apply bg-white rounded-lg shadow-sm p-6;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200;
+  }
+
+  .activity-item {
+    @apply py-3 px-4 hover:bg-gray-50 rounded-lg transition-colors duration-200 cursor-pointer;
+  }
+
+  .dashboard-container {
+    @apply grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] h-screen bg-warmGray-100;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    @apply hidden lg:block sticky top-0 h-screen overflow-y-auto bg-white;
+  }
+
+  .sidebar-left {
+    @apply border-r border-warmGray-200;
+  }
+
+  .sidebar-right {
+    @apply border-l border-warmGray-200;
+  }
+
+  .main-content {
+    @apply overflow-y-auto p-8;
+  }
+}
+
+/* NProgress Loading Bar Styles */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #2563eb;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px #2563eb, 0 0 5px #2563eb;
+  opacity: 1.0;
+  transform: rotate(3deg) translate(0px, -4px);
+}

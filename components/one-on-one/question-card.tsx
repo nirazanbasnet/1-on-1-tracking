@@ -79,13 +79,48 @@ export function QuestionCard({
 
     if (!otherAnswer) return null;
 
-    // Only show text responses, not ratings
-    if (!otherAnswer.text_value) return null;
+    // Show if there's either a rating or text
+    if (!otherAnswer.rating_value && !otherAnswer.text_value) return null;
 
     return (
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-xs font-medium text-gray-500 mb-2">{otherRole} Notes:</p>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{otherAnswer.text_value}</p>
+      <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+        <p className="text-xs font-semibold text-blue-700 mb-3">{otherRole}'s Response:</p>
+
+        {/* Show rating if it exists */}
+        {isRatingQuestion && otherAnswer.rating_value && (
+          <div className="mb-3">
+            <p className="text-xs text-gray-600 mb-2">Rating:</p>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <div
+                  key={value}
+                  className={`w-10 h-10 rounded-lg border-2 font-semibold text-sm flex items-center justify-center ${
+                    otherAnswer.rating_value === value
+                      ? 'border-blue-600 bg-blue-600 text-white shadow-md'
+                      : 'border-gray-300 bg-white text-gray-400'
+                  }`}
+                >
+                  {value}
+                </div>
+              ))}
+              <span className="ml-2 text-sm font-medium text-blue-700">
+                {otherAnswer.rating_value === 1 && 'Very Low'}
+                {otherAnswer.rating_value === 2 && 'Low'}
+                {otherAnswer.rating_value === 3 && 'Average'}
+                {otherAnswer.rating_value === 4 && 'High'}
+                {otherAnswer.rating_value === 5 && 'Very High'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Show text if it exists */}
+        {otherAnswer.text_value && (
+          <div>
+            <p className="text-xs text-gray-600 mb-2">Notes:</p>
+            <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{otherAnswer.text_value}</p>
+          </div>
+        )}
       </div>
     );
   };

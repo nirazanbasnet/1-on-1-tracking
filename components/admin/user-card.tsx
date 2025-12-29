@@ -222,7 +222,7 @@ export function UserCard({ user, teams, currentUserId }: UserCardProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Role</span>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(currentRole)}`}>
+          <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getRoleBadgeColor(currentRole)}`}>
             {currentRole}
           </span>
         </div>

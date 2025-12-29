@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
+import { NavigationProgress } from '@/components/providers/navigation-progress';
+import { LinkInterceptor } from '@/components/providers/link-interceptor';
 
-const inter = Inter({ subsets: ['latin'] });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
+});
 
 export const metadata: Metadata = {
   title: '1-on-1 Tracking - Engineering Growth Platform',
@@ -16,7 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className} suppressHydrationWarning>{children}</body>
+      <body className={plusJakartaSans.className} suppressHydrationWarning>
+        <NavigationProgress />
+        <LinkInterceptor />
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
