@@ -2,6 +2,7 @@
 
 import { AppUser, Notification } from '@/lib/types/database';
 import { formatDistanceToNow } from 'date-fns';
+import { Avatar } from '@/components/ui/avatar';
 
 interface RightSidebarProps {
   userProfile: AppUser;
@@ -46,9 +47,12 @@ export function RightSidebar({
         {/* User Profile Card */}
         <div className="bg-warmGray-50 rounded-xl p-6 text-center mb-6">
           <div className="relative inline-block mb-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-              {userProfile.full_name?.charAt(0).toUpperCase() || 'U'}
-            </div>
+            <Avatar
+              email={userProfile.email}
+              fullName={userProfile.full_name}
+              avatarUrl={userProfile.avatar_url}
+              size={80}
+            />
             <div className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
           </div>
 
