@@ -26,14 +26,10 @@ const navigationItems: Record<UserRole, NavItem[]> = {
   ],
   manager: [
     { name: 'Home', href: '/dashboard', icon: '🏠' },
-    { name: 'My Team', href: '/dashboard#team', icon: '👥' },
-    { name: 'Tasks', href: '/dashboard#tasks', icon: '✓' },
     { name: 'Analytics', href: '/analytics', icon: '📊' },
   ],
   developer: [
     { name: 'Home', href: '/dashboard', icon: '🏠' },
-    { name: 'My 1-on-1s', href: '/dashboard#sessions', icon: '📝' },
-    { name: 'Tasks', href: '/dashboard#tasks', icon: '✓' },
     { name: 'Analytics', href: '/analytics', icon: '📊' },
   ],
 };
