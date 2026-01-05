@@ -84,7 +84,6 @@ export default async function UsersPage() {
       notifications={notifications}
       unreadCount={unreadCount}
       currentPage="dashboard"
-      userRole={userProfile.role}
     >
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}

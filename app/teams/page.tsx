@@ -40,7 +40,7 @@ async function getManagers() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('app_users')
-    .select('id, email, full_name, role, created_at, updated_at')
+    .select('id, email, full_name, avatar_url, role, created_at, updated_at')
     .in('role', ['admin', 'manager'])
     .order('full_name');
 
@@ -75,7 +75,6 @@ export default async function TeamsPage() {
       notifications={notifications}
       unreadCount={unreadCount}
       currentPage="dashboard"
-      userRole={userProfile.role}
     >
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
