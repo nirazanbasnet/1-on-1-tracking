@@ -18,8 +18,9 @@ interface LeftSidebarProps {
 
 const navigationItems: Record<UserRole, NavItem[]> = {
   admin: [
-    { name: 'Home', href: '/dashboard', icon: '🏠' },
-    { name: 'Teams', href: '/dashboard#teams', icon: '👥' },
+    { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
+    { name: 'Teams', href: '/teams', icon: '👥' },
+    { name: 'Users', href: '/users', icon: '👤' },
     { name: 'Analytics', href: '/analytics', icon: '📊' },
     { name: 'Settings', href: '/settings', icon: '⚙️' },
   ],
@@ -45,6 +46,9 @@ export function LeftSidebar({ currentPage, userRole }: LeftSidebarProps) {
     // Handle exact match for main pages
     if (href === '/dashboard') return pathname === '/dashboard';
     if (href === '/analytics') return pathname === '/analytics';
+    if (href === '/teams') return pathname === '/teams';
+    if (href === '/users') return pathname === '/users';
+    if (href === '/settings') return pathname === '/settings';
     // Handle hash links
     return false;
   };

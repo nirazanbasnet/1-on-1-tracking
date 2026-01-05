@@ -101,6 +101,24 @@
   .main-content {
     @apply overflow-y-auto p-8;
   }
+
+  /* Custom Scrollbar Styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-indigo-400 to-purple-400 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gradient-to-b from-indigo-500 to-purple-500;
+  }
 }
 
 /* NProgress Loading Bar Styles */

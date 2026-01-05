@@ -74,11 +74,11 @@ export function RightSidebar({
         <div className="flex-1 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-lg text-gray-900">Activity</h3>
-            {unreadCount > 0 && (
+            {/* {unreadCount > 0 && (
               <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                 {unreadCount}
               </span>
-            )}
+            )} */}
           </div>
 
           <div className="space-y-4">
