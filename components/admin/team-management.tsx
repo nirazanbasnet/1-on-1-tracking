@@ -30,6 +30,7 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [managingMembersTeamId, setManagingMembersTeamId] = useState<string | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamManager, setNewTeamManager] = useState('');
   const [editTeamName, setEditTeamName] = useState('');
@@ -200,6 +201,48 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
     setIsCreating(false);
     setNewTeamName('');
     setNewTeamManager('');
+  };
+
+  const handleToggleMemberInTeam = async (userId: string, teamId: string, isCurrentlyMember: boolean) => {
+    setIsSubmitting(true);
+    try {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) throw new Error('User not found');
+
+      const currentTeamIds = user.team_ids || [];
+      const newTeamIds = isCurrentlyMember
+        ? currentTeamIds.filter(id => id !== teamId)
+        : [...currentTeamIds, teamId];
+
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_ids: newTeamIds }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update user teams');
+      }
+
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: isCurrentlyMember ? 'Member removed from team' : 'Member added to team',
+      });
+
+      router.refresh();
+    } catch (err) {
+      console.error('Error updating team members:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to update team members',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -489,6 +532,70 @@ export function TeamManagement({ teams: initialTeams, managers, allUsers = [] }:
                   {memberCount === 0 && (
                     <div className="text-center py-4">
                       <p className="text-sm text-gray-400 font-medium">No members yet</p>
+                    </div>
+                  )}
+
+                  {/* Manage Members Button */}
+                  <button
+                    onClick={() => setManagingMembersTeamId(managingMembersTeamId === team.id ? null : team.id)}
+                    className="mt-4 w-full py-2.5 px-4 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-600 rounded-lg font-semibold text-sm transition-all duration-200 border border-indigo-200 hover:border-indigo-300"
+                  >
+                    {managingMembersTeamId === team.id ? 'Hide Member Management' : 'Manage Members'}
+                  </button>
+
+                  {/* Member Management Section */}
+                  {managingMembersTeamId === team.id && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3 max-h-80 overflow-y-auto">
+                      <h4 className="text-sm font-bold text-gray-900 mb-3">Add/Remove Members</h4>
+                      {allUsers.length === 0 ? (
+                        <p className="text-sm text-gray-500">No users available</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {allUsers.map(user => {
+                            const isMember = user.team_ids?.includes(team.id) || false;
+                            const isManager = user.id === team.manager_id;
+                            return (
+                              <div
+                                key={user.id}
+                                className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                              >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <Avatar
+                                    email={user.email}
+                                    fullName={user.full_name}
+                                    avatarUrl={user.avatar_url}
+                                    size={32}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 truncate">
+                                      {user.full_name || user.email}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-xs text-gray-500 capitalize">{user.role}</span>
+                                      {isManager && (
+                                        <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">
+                                          Manager
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleToggleMemberInTeam(user.id, team.id, isMember)}
+                                  disabled={isSubmitting}
+                                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    isMember
+                                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                      : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
+                                  }`}
+                                >
+                                  {isMember ? 'Remove' : 'Add'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

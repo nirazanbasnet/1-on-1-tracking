@@ -50,6 +50,29 @@ async function getManagers() {
   }));
 }
 
+async function getAllUsers() {
+  const supabase = await createClient();
+
+  const { data: users } = await supabase
+    .from('app_users')
+    .select('id, email, full_name, avatar_url, role, created_at, updated_at')
+    .order('full_name');
+
+  if (!users) return [];
+
+  const { data: userTeams } = await supabase
+    .from('user_teams')
+    .select('user_id, team_id');
+
+  const result = users.map(user => ({
+    ...user,
+    team_id: null,
+    team_ids: userTeams?.filter(ut => ut.user_id === user.id).map(ut => ut.team_id) || []
+  }));
+
+  return result;
+}
+
 export default async function TeamsPage() {
   const userProfile = await getCurrentUserProfile();
 
@@ -62,9 +85,10 @@ export default async function TeamsPage() {
     redirect('/dashboard');
   }
 
-  const [teams, managers, notifications, unreadCount] = await Promise.all([
+  const [teams, managers, allUsers, notifications, unreadCount] = await Promise.all([
     getAllTeams(),
     getManagers(),
+    getAllUsers(),
     getMyNotifications(),
     getUnreadNotificationCount(),
   ]);
@@ -84,7 +108,7 @@ export default async function TeamsPage() {
         </div>
 
         {/* Team Management Component */}
-        <TeamManagement teams={teams} managers={managers} />
+        <TeamManagement teams={teams} managers={managers} allUsers={allUsers} />
       </div>
     </DashboardLayout>
   );
